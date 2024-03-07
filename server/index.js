@@ -8,13 +8,17 @@ const { getStandings, parseTeams: parseTeamStats } = require("./utils");
 let teamStats = undefined;
 
 const express = require("express");
+const path = require("node:path");
 
 const main = async () => {
   try {
     // load seed html file. expect someone to upload a refreshed html file later
-    const seedStandings = await fs.readFile("./seed_standings.html", {
-      encoding: "utf8",
-    });
+    const seedStandings = await fs.readFile(
+      path.join(__dirname, "seed_standings.html"),
+      {
+        encoding: "utf8",
+      }
+    );
     const $ = cheerio.load(seedStandings);
 
     // parse the teams
@@ -76,7 +80,6 @@ const setupAPIServer = () => {
     const filteredDivisions = divisions.filter((division) => {
       return standings[division][0].day.toLowerCase() === day.toLowerCase();
     });
-    console.log(filteredDivisions);
 
     const out = {};
     filteredDivisions.forEach((division) => {
