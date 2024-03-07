@@ -1,143 +1,110 @@
 const fs = require("node:fs/promises");
 
-// const express = require("express");
 const cheerio = require("cheerio");
-//
-// const app = express();
-// const port = 3000;
-//
-// app.get("/schedule", (req, res) => {
-//   res.send("Hello World!");
-// });
-//
-// app.get("/standings/:team", (req, res) => {
-//   res.send("Hello World!");
-// });
-//
-// app.get("/standings", (req, res) => {
-//   res.send("Hello World!");
-// });
-//
-// app.get("/matchup", (req, res) => {
-//   res.send("Hello World!");
-// });
-//
-// app.listen(port, () => {
-//   console.log(`Example app listening on port ${port}`);
-// });
+
+const { getStandings, parseTeams: parseTeamStats } = require("./parse");
+
+let teamStats = undefined;
+
+const express = require("express");
 
 const main = async () => {
   try {
-    // parse the standings
-    const standings = await getStandings();
-
-    // parse the schedule
-  } catch (err) {}
-};
-
-const getStandings = async () => {
-  // const out = {
-  //   last_updated: "",
-  //   divisions: [],
-  // };
-  try {
+    // load html file
     const data = await fs.readFile("./amsterdam.html", { encoding: "utf8" });
     const $ = cheerio.load(data);
 
-    // TODO: if last updated date is same or before last known value, then we skip parsing the doc
-    // const lastUpdated = getLastUpdated($);
-    // console.log(lastUpdated);
+    // parse the teams
+    teamStats = parseTeamStats($);
 
-    // parse standings
-    const teams = getTeams($);
-  } catch (err) {
-    console.error(err);
-  }
-};
+    const app = express();
+    const port = 3000;
 
-const TABLE_ROWS = ["place", "team_name", "wins", "losses", "rack_percentage"];
-const NUMERIC_TABLE_COLUMNS = new Set([
-  "place",
-  "wins",
-  "losses",
-  "rack_percentage",
-]);
-/** getTeams builds an array of object where each inner object has the following fields
- *
- * {
- * team_name: string    // name of the team
- * division: string     // the division of the team
- * wins: number         // number of wins
- * losses: number       // number of losses
- * rack_percentage      //  percentage of racks won
- * }
- */
-const getTeams = ($) => {
-  const out = [];
-  const table = $("center>table>tbody");
-
-  // each row in the table contains 2 teams:
-  // the left team belongs to division[0]
-  // the right team belongs to division[1]
-  const divisions = ["", ""];
-
-  // iterate over the rows of the table. i and j form coordinates in our eventual 2D
-  table.find("tr").each(function (i) {
-    // parse the row
-    const row = $(this).find("td");
-
-    // skip rows that contain the header rows (Place, Team Name, W's, L's, PCT.) row % 10 = 1
-    // skip rows that either contain only 1 cell (which is only a &nbsp) row % 10 = 9
-    if (i % 10 == 1 || i % 10 == 9 || row.length === 1) {
-      return;
-    }
-
-    // if row is 2 long this is a row containing the division names
-    if (row.length == 2) {
-      row.each(function (j) {
-        const division = $(this).text().trim();
-        // filter out empty divisions which means that we've reached the last empty table
-        if (division.length === 0) {
-          return;
-        }
-
-        divisions[j] = division;
-      });
-
-      return;
-    }
-
-    // otherwise, this is a row containing 2 teams and their stats
-    let team = {};
-    row.each(function (j) {
-      const dataField = $(this).text().trim();
-      const field = TABLE_ROWS[j % 5];
-
-      if (NUMERIC_TABLE_COLUMNS.has(field)) {
-        team[field] = Number(dataField); // parse number from string
-      } else {
-        team[field] = dataField;
-      }
-
-      // this is the end of a team's stat cells
-      if (j % 5 === 4) {
-        // 0 means left, 1 means right
-        const divisionIdx = j < 5 ? 0 : 1; // if j === [0,4], then it's the left division, otherwise it's the right
-        team["division"] = divisions[divisionIdx];
-        out.push(team);
-        team = {};
-      }
+    // returns matchup of a specific team on a given week
+    app.get("/schedule/:day/:team/:week", (req, res) => {
+      res.send("not implemented yet");
     });
-  });
 
-  return out;
-};
+    // returns the schedule of a specific team
+    app.get("/schedule/:day/:team", (req, res) => {
+      res.send("not implemented yet");
+    });
 
-const getLastUpdated = ($) => {
-  const headerText = $("td>h3").text();
-  const lastUpdatedText = headerText.split(/\n/)[1].trim();
-  const cleanedDate = lastUpdatedText.slice(14, lastUpdatedText.length - 1);
-  return cleanedDate;
+    // returns the entire schedule of league by the day
+    app.get("/schedule/:day", (req, res) => {
+      res.send("not implemented yet");
+    });
+
+    // returns stats of a team
+    app.get("/teams/stats/:team", (req, res) => {
+      const { team } = req.params;
+      if (!teamStats[team]) {
+        res.status(404).send(`Team '${team}' not found`);
+        return;
+      }
+
+      res.json(teamStats[team]);
+    });
+
+    // returns stats of all teams
+    app.get("/teams/stats", (_req, res) => {
+      res.json(teamStats);
+    });
+
+    // return list of team names
+    app.get("/teams", (_req, res) => {
+      res.json(Object.keys(teamStats));
+    });
+
+    // returns standings by day
+    app.get("/standings/days/:day", async (req, res) => {
+      const { day } = req.params;
+
+      const standings = getStandings(teamStats);
+
+      const divisions = Object.keys(standings);
+      const filteredDivisions = divisions.filter((division) => {
+        return standings[division][0].day.toLowerCase() === day.toLowerCase();
+      });
+      console.log(filteredDivisions);
+
+      const out = {};
+      filteredDivisions.forEach((division) => {
+        out[division] = standings[division];
+      });
+      res.json(out);
+    });
+
+    // returns standings by division
+    app.get("/standings/divisions/:division", async (req, res) => {
+      const { division } = req.params;
+
+      const standings = getStandings(teamStats);
+
+      if (!standings[division]) {
+        res.status(404).send(`division '${division}' not found`);
+      }
+
+      res.json(standings[division]);
+    });
+
+    // returns standings by division
+    app.get("/standings", async (_req, res) => {
+      const standings = getStandings(teamStats);
+
+      res.json(standings);
+    });
+
+    app.all("*", (_req, res) => {
+      res.status(404).send("unknown request");
+    });
+
+    app.listen(port, () => {
+      console.log(`Example app listening on port ${port}`);
+    });
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 main();
