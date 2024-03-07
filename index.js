@@ -1,110 +1,23 @@
-const fs = require("node:fs/promises");
+const { Client, Events, GatewayIntentBits } = require("discord.js");
+require("dotenv").config();
 
-const cheerio = require("cheerio");
+const setupDiscordClient = () => {
+  // Create a new client instance
+  const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-const { getStandings, parseTeams: parseTeamStats } = require("./parse");
+  // When the client is ready, run this code (only once).
+  // The distinction between `client: Client<boolean>` and `readyClient: Client<true>` is important for TypeScript developers.
+  // It makes some properties non-nullable.
+  client.once(Events.ClientReady, (readyClient) => {
+    console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+  });
 
-let teamStats = undefined;
-
-const express = require("express");
-
-const main = async () => {
-  try {
-    // load html file
-    const data = await fs.readFile("./amsterdam.html", { encoding: "utf8" });
-    const $ = cheerio.load(data);
-
-    // parse the teams
-    teamStats = parseTeamStats($);
-
-    const app = express();
-    const port = 3000;
-
-    // returns matchup of a specific team on a given week
-    app.get("/schedule/:day/:team/:week", (req, res) => {
-      res.send("not implemented yet");
-    });
-
-    // returns the schedule of a specific team
-    app.get("/schedule/:day/:team", (req, res) => {
-      res.send("not implemented yet");
-    });
-
-    // returns the entire schedule of league by the day
-    app.get("/schedule/:day", (req, res) => {
-      res.send("not implemented yet");
-    });
-
-    // returns stats of a team
-    app.get("/teams/stats/:team", (req, res) => {
-      const { team } = req.params;
-      if (!teamStats[team]) {
-        res.status(404).send(`Team '${team}' not found`);
-        return;
-      }
-
-      res.json(teamStats[team]);
-    });
-
-    // returns stats of all teams
-    app.get("/teams/stats", (_req, res) => {
-      res.json(teamStats);
-    });
-
-    // return list of team names
-    app.get("/teams", (_req, res) => {
-      res.json(Object.keys(teamStats));
-    });
-
-    // returns standings by day
-    app.get("/standings/days/:day", async (req, res) => {
-      const { day } = req.params;
-
-      const standings = getStandings(teamStats);
-
-      const divisions = Object.keys(standings);
-      const filteredDivisions = divisions.filter((division) => {
-        return standings[division][0].day.toLowerCase() === day.toLowerCase();
-      });
-      console.log(filteredDivisions);
-
-      const out = {};
-      filteredDivisions.forEach((division) => {
-        out[division] = standings[division];
-      });
-      res.json(out);
-    });
-
-    // returns standings by division
-    app.get("/standings/divisions/:division", async (req, res) => {
-      const { division } = req.params;
-
-      const standings = getStandings(teamStats);
-
-      if (!standings[division]) {
-        res.status(404).send(`division '${division}' not found`);
-      }
-
-      res.json(standings[division]);
-    });
-
-    // returns standings by division
-    app.get("/standings", async (_req, res) => {
-      const standings = getStandings(teamStats);
-
-      res.json(standings);
-    });
-
-    app.all("*", (_req, res) => {
-      res.status(404).send("unknown request");
-    });
-
-    app.listen(port, () => {
-      console.log(`Example app listening on port ${port}`);
-    });
-  } catch (err) {
-    console.log(err);
-  }
+  // Log in to Discord with your client's token
+  client.login(process.env.DISCORD_APP_TOKEN);
 };
 
-main();
+setupDiscordClient();
+
+module.exports = {
+  setupDiscordClient,
+};
