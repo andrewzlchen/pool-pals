@@ -3,7 +3,7 @@ const fs = require("node:fs/promises");
 const cheerio = require("cheerio");
 require("dotenv").config();
 
-const { getStandings, parseTeams: parseTeamStats } = require("./utils");
+const { getStandings, parseTeamStats, teamNameToID } = require("./utils");
 
 let teamStats = undefined;
 
@@ -66,8 +66,27 @@ const setupAPIServer = () => {
   });
 
   // return list of team names
+  app.get("/ids", (_req, res) => {
+    res.json(
+      Object.keys(teamStats).map((id) => teamNameToID(teamStats[id]["name"]))
+    );
+  });
+
+  // return nicely formatted list of team names by day
   app.get("/teams", (_req, res) => {
-    res.json(Object.keys(teamStats));
+    const teams = {};
+    Object.keys(teamStats).forEach((id) => {
+      const team = teamStats[id];
+
+      if (!teams[team["day"]]) {
+        teams[team["day"]] = [];
+      }
+
+      teams[team["day"]].push(
+        `${team["name"]} (${team["wins"]}W - ${team["losses"]}L)`
+      );
+    });
+    res.json(teams);
   });
 
   // returns standings by day
@@ -86,19 +105,6 @@ const setupAPIServer = () => {
       out[division] = standings[division];
     });
     res.json(out);
-  });
-
-  // returns standings by division
-  app.get("/standings/divisions/:division", async (req, res) => {
-    const { division } = req.params;
-
-    const standings = getStandings(teamStats);
-
-    if (!standings[division]) {
-      res.status(404).send(`division '${division}' not found`);
-    }
-
-    res.json(standings[division]);
   });
 
   // returns standings by division

@@ -4,11 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "concurrently \"npm:server\"",
-    "server": "node server/index.js",
-    "bot": "node index.js",
-    "dev:server": "nodemon server/index.js",
-    "dev:bot": "nodemon index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +16,6 @@
     "express": "^4.18.3"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
     "nodemon": "^3.1.0"
   }
 }

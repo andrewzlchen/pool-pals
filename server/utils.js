@@ -1,9 +1,9 @@
-const TABLE_ROWS = ["place", "team_name", "wins", "losses", "rack_percentage"];
+const TABLE_ROWS = ["place", "name", "wins", "losses", "rackPercentage"];
 const NUMERIC_TABLE_COLUMNS = new Set([
   "place",
   "wins",
   "losses",
-  "rack_percentage",
+  "rackPercentage",
 ]);
 
 const getStandings = (teams) => {
@@ -11,7 +11,7 @@ const getStandings = (teams) => {
     const standingsByDivision = {};
     Object.keys(teams).forEach((teamName) => {
       const team = teams[teamName];
-      const id = divisionToID(team.division);
+      const id = team.division;
 
       if (!standingsByDivision[id]) {
         standingsByDivision[id] = [];
@@ -34,14 +34,14 @@ const getStandings = (teams) => {
 /** getTeams builds an object of object where the key is the team name and the inner object has the following fields
  *
  * {
- * team_name: string    // name of the team
+ * name: string    // name of the team
  * division: string     // the division of the team
  * wins: number         // number of wins
  * losses: number       // number of losses
- * rack_percentage      //  percentage of racks won
+ * rackPercentage      //  percentage of racks won
  * }
  */
-const parseTeams = ($) => {
+const parseTeamStats = ($) => {
   // TODO: if last updated date is same or before last known value, then we skip parsing the doc
   // const lastUpdated = getLastUpdated($);
   // console.log(lastUpdated);
@@ -100,7 +100,7 @@ const parseTeams = ($) => {
         team["division"] = divisions[divisionIdx];
         team["day"] = divisionIdx === 0 ? "Tuesday" : "Wednesday";
 
-        const id = teamNameToID(team["team_name"]);
+        const id = teamNameToID(team["name"]);
         out[id] = team;
         team = {};
       }
@@ -117,11 +117,6 @@ const parseLastUpdated = ($) => {
   return cleanedDate;
 };
 
-const divisionToID = (division) => {
-  // divisions are usually in the form of "X Division". we want to return "x"
-  return division.split(" ")[0].toLowerCase();
-};
-
 const teamNameToID = (name) => {
   return name.replace(/\s+/g, "").toLowerCase();
 };
@@ -129,6 +124,6 @@ const teamNameToID = (name) => {
 module.exports = {
   getStandings,
   parseLastUpdated,
-  parseTeams,
-  divisionToID,
+  parseTeamStats,
+  teamNameToID,
 };
