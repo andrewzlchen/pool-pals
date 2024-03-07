@@ -5,7 +5,7 @@ const { apiURL } = require("../../config.json");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("teamstats")
+    .setName("team")
     .setDescription("Get team stats")
     .addStringOption((option) =>
       option
