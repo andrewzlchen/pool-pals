@@ -1,7 +1,6 @@
 const fs = require("node:fs/promises");
 
 const cheerio = require("cheerio");
-require("dotenv").config();
 
 const { getStandings, parseTeamStats, teamNameToID } = require("./utils");
 

@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require("discord.js");
 const { table } = require("table");
 const axios = require("axios");
-const { apiURL } = require("../../config.json");
+const { apiURL } = require("../../config.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -47,7 +47,6 @@ module.exports = {
       });
       out += "```";
 
-      console.log(out);
       await interaction.reply(out);
     } catch (err) {
       console.error("failed to execute /teams command", err);
