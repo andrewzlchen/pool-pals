@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
+    "start": "NODE_ENV=\"development\" node index.js",
+    "dev": "NODE_ENV=\"development\" nodemon index.js",
     "start-server": "node server/index.js",
     "dev-server": "nodemon server/index.js",
     "deploy-prod-commands": "NODE_ENV=\"production\" node deploy-commands.js",

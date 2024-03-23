@@ -2,9 +2,15 @@ const fs = require("node:fs/promises");
 
 const cheerio = require("cheerio");
 
-const { getStandings, parseTeamStats, teamNameToID } = require("./utils");
+const {
+  getStandings,
+  parseTeamStats,
+  teamNameToID,
+  parseLastUpdated,
+} = require("./utils");
 
 let teamStats = undefined;
+let lastUpdated = "";
 
 const express = require("express");
 const path = require("node:path");
@@ -22,6 +28,7 @@ const main = async () => {
 
     // parse the teams
     teamStats = parseTeamStats($);
+    lastUpdated = parseLastUpdated($);
 
     setupAPIServer();
   } catch (err) {
@@ -103,7 +110,7 @@ const setupAPIServer = () => {
     filteredDivisions.forEach((division) => {
       out[division] = standings[division];
     });
-    res.json(out);
+    res.json({lastUpdated, divisions: out});
   });
 
   // returns standings by division

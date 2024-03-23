@@ -22,9 +22,9 @@ module.exports = {
 
     try {
       const res = await axios.get(`${apiURL}/standings/days/${day}`);
-      const standingsByLeagueDay = res.data;
+      const {lastUpdated, divisions: standingsByLeagueDay} = res.data;
 
-      let out = "```\n";
+      let out = "```\n" + `Last Updated: ${lastUpdated}` + "\n";
       Object.keys(standingsByLeagueDay).forEach(async (division) => {
         const data = [["Rank", "Name", "Ws", "Ls", "Rack %"]];
         const teams = standingsByLeagueDay[division];

@@ -43,9 +43,6 @@ const getStandings = (teams) => {
  */
 const parseTeamStats = ($) => {
   // TODO: if last updated date is same or before last known value, then we skip parsing the doc
-  // const lastUpdated = getLastUpdated($);
-  // console.log(lastUpdated);
-
   const out = {};
   const table = $("center>table>tbody");
 
