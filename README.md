@@ -9,4 +9,6 @@ This repository contains two separate node projects that when put together, form
 - [ ] Create api routes for uploading html pages to be parsed
 - [ ] Parse schedule page
 - [ ] Parse player stats page and use results in the /team command
+- [ ] Remove /teams command (it's redundant from the /standings command)
+- [ ] Automate getting up-to-date standings
 
