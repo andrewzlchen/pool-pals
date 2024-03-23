@@ -14,4 +14,4 @@ RUN ls -al -R
 
 #RUN pm2 install pm2-server-monit
 
-CMD [ "pm2-runtime", "start", "ecosystem.config.js" ]
+CMD [ "pm2-runtime", "start", "ecosystem.config.js", "--env", "production" ]
