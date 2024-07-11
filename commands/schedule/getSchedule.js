@@ -30,44 +30,31 @@ module.exports = {
       const res = await axios.get(`${apiURL}/schedule/days/Tuesday`);
       const schedule = res.data;
 
-      let out = "```\n";
+      // let out = "```\n";
+      // let out = "";
 
       const week = schedule[weekNumber - 1];
 
-      const data = [["Team A", "Team B", "Time"]];
+      const matchups = [];
       week.forEach(({ teams, time }) => {
-        let matchupHasSpecifiedTeam = false;
         if (selectedTeam) {
-          // check if the current matchup contains the team we're interested in seeing the opponents for
+          // only give back the matchup involving the selected team
           teams.forEach((currentTeam) => {
             if (currentTeam.toLowerCase() === selectedTeam.toLowerCase()) {
-              matchupHasSpecifiedTeam = true;
+              matchups.push(
+                `**${teams[0]}** vs. **${teams[1]}** @${time.replace("Tuesday ", "")}`,
+              );
             }
           });
-        }
-        if (!selectedTeam || matchupHasSpecifiedTeam) {
-          data.push([`${teams[0]} vs. ${teams[1]} @${time}`]);
-        }
-      });
-
-      const weeklyMatchupsTable = table(data, {
-        header: { content: `Week ${weekNumber}` },
-        // singleLine: true,
-        drawHorizontalLine: (lineIndex, rowCount) => {
-          return (
-            lineIndex === 0 ||
-            lineIndex === 1 ||
-            lineIndex === 2 ||
-            lineIndex === rowCount
+        } else {
+          // list all matchups for the given week
+          matchups.push(
+            `**${teams[0]}** vs. **${teams[1]}** @${time.replace("Tuesday ", "")}`,
           );
-        },
+        }
       });
 
-      out += `${weeklyMatchupsTable}\n`;
-
-      out += "```";
-
-      await interaction.reply(out);
+      await interaction.reply(matchups.join("\n\n"));
     } catch (err) {
       console.error("failed to execute /schedule command", err);
       await interaction.reply(`Error running command: ${err.error}`);
