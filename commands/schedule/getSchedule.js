@@ -35,26 +35,33 @@ module.exports = {
 
       const week = schedule[weekNumber - 1];
 
-      const matchups = [];
+      const out = [];
       week.forEach(({ teams, time }) => {
         if (selectedTeam) {
           // only give back the matchup involving the selected team
           teams.forEach((currentTeam) => {
             if (currentTeam.toLowerCase() === selectedTeam.toLowerCase()) {
-              matchups.push(
+              out.push(
                 `**${teams[0]}** vs. **${teams[1]}** @${time.replace("Tuesday ", "")}`,
               );
             }
           });
         } else {
           // list all matchups for the given week
-          matchups.push(
+          out.push(
             `**${teams[0]}** vs. **${teams[1]}** @${time.replace("Tuesday ", "")}`,
           );
         }
       });
 
-      await interaction.reply(matchups.join("\n\n"));
+      out.push(
+        "[Team Standings](https://leagues2.amsterdambilliards.com/8ball/abc/team_standings.php?foo=bar)",
+      );
+      out.push(
+        "[Individual Standings](https://leagues2.amsterdambilliards.com/8ball/abc/individual_standings.php?foo=bar)",
+      );
+
+      await interaction.reply(out.join("\n\n"));
     } catch (err) {
       console.error("failed to execute /schedule command", err);
       await interaction.reply(`Error running command: ${err.error}`);
