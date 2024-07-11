@@ -88,7 +88,6 @@ const parseSchedule = ($) => {
     const matchups = $(this);
     const week = [];
 
-    console.log("there are", weeklyMatchups.length, "matchups");
     if (i === 0) {
       // ignore the first match which has a bunch of shit
       return;
@@ -128,15 +127,11 @@ const parseSchedule = ($) => {
       });
 
       week.push({ teams, time });
-      // console.log("week is now of size", week.length);
     });
 
     if (week.length > 0) {
       out.push(week);
     }
-    console.log("out is now of size", out.length);
-    // console.log(JSON.stringify(out[0], null, 2));
-    // console.log("first week has", out[0].length, "matchups");
   });
 
   return out;

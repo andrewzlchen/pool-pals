@@ -46,7 +46,7 @@ module.exports = {
           });
         }
         if (!selectedTeam || matchupHasSpecifiedTeam) {
-          data.push([teams[0], teams[1], `@${time}`]);
+          data.push([`${teams[0]} vs. ${teams[1]} @${time}`]);
         }
       });
 
